@@ -28,12 +28,12 @@ export class Modal extends Component {
 
     render() {
 
-        const { image, tags } = this.props;
-    
+        const { largeImage, tags } = this.props;
+
         return createPortal(
           <Overlay onClick={this.onClose}>
             <ModalStyle>
-              <img src={image} alt={tags} />
+              <img src={largeImage} alt={tags} />;
             </ModalStyle>
           </Overlay>,
           modalRoot,
@@ -42,6 +42,6 @@ export class Modal extends Component {
 }
 
 Modal.propTypes = {
-    image: PropTypes.string.isRequired,
+    largeImage: PropTypes.string.isRequired,
     tags: PropTypes.string.isRequired,
-  };
+};

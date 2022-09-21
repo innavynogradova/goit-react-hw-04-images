@@ -6,6 +6,7 @@ import { Searchbar } from "./Searchbar/Searchbar";
 import { ImageGallery } from "./ImageGallery/ImageGallery";
 import { Button } from "./Button/Button";
 import { Loader } from "./Loader/Loader";
+import { Modal } from 'components/Modal/Modal';
 
 import { Notify } from "notiflix";
 
@@ -18,7 +19,9 @@ export class App extends Component {
         images: '',
         loading: false,
         totalPages: '',
-
+        showModal: false,
+        modalImage: null,
+        modalImageTags: '',
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -37,7 +40,7 @@ export class App extends Component {
       this.setState({ 
         searchQuery: '', 
         page: 1, 
-        images: [] 
+        images: [],
       });
       Notify.warning("You didn't enter anything!");
       return;
@@ -62,6 +65,10 @@ export class App extends Component {
       this.setState({
         loading: true,
       });
+
+      if (searchQuery === '') {
+        return;
+      };
 
       const data = await fetchApi(searchQuery, page);
       // console.log(data.hits);
@@ -102,18 +109,37 @@ export class App extends Component {
   }));    
   };
 
+  toggle = () => {
+    this.setState(({ showModal }) => ({ showModal: !showModal }));
+  };
+
+  openModal = (id) => {
+    const imageModalData = this.state.images.find(image => image.id === id);
+    const largeImage = imageModalData.largeImageURL;
+    const imageTags = imageModalData.tags;
+  
+    this.setState({
+      modalImage: largeImage,
+      modalImageTags: imageTags,
+    });
+    this.toggle();
+  }
+
   render() {
 
-    const { images, loading, totalPages, page } = this.state;
+    const { images, loading, totalPages, page, showModal, modalImage, modalImageTags } = this.state;
     const imagesExist = images.length !== 0;
     const isNotLastPage = page < totalPages;
 
     return (
       <Box display="grid" gridTemplateColumns="1fr" gridGap="16px" pb="24px">
-        <Searchbar onSubmit={this.handleSearchQuery} />
-        {imagesExist && <ImageGallery images={images} loadMore={this.loadMore} />}
-        {loading ? (<Loader />) : (imagesExist && isNotLastPage && <Button onClick={this.loadMore} />)}
-        <GlobalStyle />
+          <Searchbar onSubmit={this.handleSearchQuery} />
+          {imagesExist && <ImageGallery images={images} loadMore={this.loadMore} onImageClick={this.openModal} />}
+          {loading ? (<Loader />) : (imagesExist && isNotLastPage && <Button onClick={this.loadMore} />)}
+          {showModal && (
+              <Modal onMClose={this.toggle} largeImage={modalImage} tags={modalImageTags} />
+          )}
+          <GlobalStyle />
       </Box>
     );
   }
